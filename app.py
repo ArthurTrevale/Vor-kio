@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_file
 
 app = Flask(__name__)
 dicionario = {}
@@ -44,7 +44,6 @@ def confirmar_substituicao():
 
     return render_template('template.html', mensagem='Palavra substituída com sucesso!')
 
-
 @app.route('/requisitar', methods=['GET'])
 def requisitar():
     entrada = request.args.get('palavra')
@@ -68,6 +67,9 @@ def requisitar():
     
     return jsonify({'entrada': entrada, 'traducoes': resultado})
 
+@app.route('/download', methods=['GET'])
+def download():
+    return send_file('dicionario.txt', as_attachment=True)
 
 if __name__ == '__main__':
     try:

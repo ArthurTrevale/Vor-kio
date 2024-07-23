@@ -31,81 +31,84 @@
         <!-- Aqui serão exibidos os resultados -->
         <p id="escrita"></p>
         <p id="pronuncia"></p>
-        
     </div>
+
+    <hr>
+
+    <h2>Baixar Dicionário</h2>
+    <form action="/download" method="GET">
+        <input type="submit" value="Baixar dicionário">
+    </form>
 
     <script>
         document.getElementById('form_requisicao').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const entrada = document.getElementById('palavra_requisitada').value;
+            event.preventDefault();
+            const entrada = document.getElementById('palavra_requisitada').value;
 
-    fetch(`/requisitar?palavra=${encodeURIComponent(entrada)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.erro) {
-                document.getElementById('resultado').innerHTML = `<p>${data.erro}</p>`;
-            } else {
-                document.getElementById('pronuncia').innerHTML = `<strong></strong> ${data.traducoes}`;
-                
-                // Para exibir a escrita com a fonte personalizada
-                const escritaElement = document.getElementById('escrita');
-                escritaElement.innerHTML = `<strong></strong> ${data.traducoes}`;
-                escritaElement.style.fontFamily = 'Vorákio'; // Substitua 'MinhaFonte' pelo nome da sua fonte
-                escritaElement.style.fontSize = '16px'; // Ajuste o tamanho da fonte conforme necessário
-            }
-        })
-        .catch(error => {
-            console.error('Erro:', error);
+            fetch(`/requisitar?palavra=${encodeURIComponent(entrada)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.erro) {
+                        document.getElementById('resultado').innerHTML = `<p>${data.erro}</p>`;
+                    } else {
+                        document.getElementById('pronuncia').innerHTML = `<strong></strong> ${data.traducoes}`;
+                        
+                        // Para exibir a escrita com a fonte personalizada
+                        const escritaElement = document.getElementById('escrita');
+                        escritaElement.innerHTML = `<strong></strong> ${data.traducoes}`;
+                        escritaElement.style.fontFamily = 'Vorákio'; // Substitua 'MinhaFonte' pelo nome da sua fonte
+                        escritaElement.style.fontSize = '16px'; // Ajuste o tamanho da fonte conforme necessário
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
         });
-});
 
-    </script>
+        document.getElementById('form_adicionar').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const palavra = document.getElementById('palavra').value;
+            const traducao = document.getElementById('traducao').value;
 
-<script>
-    document.getElementById('form_adicionar').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const palavra = document.getElementById('palavra').value;
-        const traducao = document.getElementById('traducao').value;
-
-        fetch('/adicionar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest' // Marca a requisição como AJAX
-            },
-            body: JSON.stringify({ palavra: palavra, traducao: traducao })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.confirmacao) {
-                // Perguntar ao usuário se deseja substituir
-                if (confirm(`A palavra "${data.palavra}" já existe. Deseja substituir a tradução existente?`)) {
-                    // Se o usuário confirmar, enviar outra requisição POST para confirmar a substituição
-                    fetch('/confirmar_substituicao', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ palavra: data.palavra, traducao: data.traducao })
-                    })
-                    .then(response => response.text())
-                    .then(data => {
-                        document.getElementById('mensagem').textContent = 'Palavra substituída com sucesso!';
-                    })
-                    .catch(error => {
-                        console.error('Erro ao substituir palavra:', error);
-                    });
+            fetch('/adicionar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Marca a requisição como AJAX
+                },
+                body: JSON.stringify({ palavra: palavra, traducao: traducao })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.confirmacao) {
+                    // Perguntar ao usuário se deseja substituir
+                    if (confirm(`A palavra "${data.palavra}" já existe. Deseja substituir a tradução existente?`)) {
+                        // Se o usuário confirmar, enviar outra requisição POST para confirmar a substituição
+                        fetch('/confirmar_substituicao', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ palavra: data.palavra, traducao: data.traducao })
+                        })
+                        .then(response => response.text())
+                        .then(data => {
+                            document.getElementById('mensagem').textContent = 'Palavra substituída com sucesso!';
+                        })
+                        .catch(error => {
+                            console.error('Erro ao substituir palavra:', error);
+                        });
+                    } else {
+                        console.log('Substituição cancelada pelo usuário.');
+                    }
                 } else {
-                    console.log('Substituição cancelada pelo usuário.');
+                    document.getElementById('mensagem').textContent = 'Palavra adicionada com sucesso!';
                 }
-            } else {
-                document.getElementById('mensagem').textContent = 'Palavra adicionada com sucesso!';
-            }
-        })
-        .catch(error => {
-            console.error('Erro ao adicionar palavra:', error);
+            })
+            .catch(error => {
+                console.error('Erro ao adicionar palavra:', error);
+            });
         });
-    });
-</script>
+    </script>
 </body>
 </html>
